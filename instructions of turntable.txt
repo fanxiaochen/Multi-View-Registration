@@ -1,0 +1,5 @@
+1.open moons' software and use one port to send messages
+2.do not close the software and change the port
+3.restart the software and the right situation is that you can
+not upload the drive configuration
+4.restart your program again 
