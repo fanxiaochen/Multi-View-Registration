@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuRecentWorkspaces">
+     <property name="title">
+      <string>Recent Workspaces</string>
+     </property>
+    </widget>
+    <addaction name="actionSetWorkspace"/>
+    <addaction name="menuRecentWorkspaces"/>
+   </widget>
+   <widget class="QMenu" name="menuRendering">
+    <property name="title">
+     <string>Rendering</string>
+    </property>
+    <addaction name="actionIncreasePointSize"/>
+    <addaction name="actionDecreasePointSize"/>
+    <addaction name="separator"/>
+    <addaction name="actionIncreaseLineWidth"/>
+    <addaction name="actionDecreaseLineWidth"/>
+   </widget>
+   <widget class="QMenu" name="menuRegistration">
+    <property name="title">
+     <string>Registration</string>
+    </property>
+    <addaction name="actionICP"/>
+    <addaction name="actionRefineAxis"/>
+    <addaction name="actionGenerateObject"/>
+    <addaction name="separator"/>
+    <addaction name="actionAutoReg"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuRendering"/>
+   <addaction name="menuRegistration"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSetWorkspace">
+   <property name="text">
+    <string>Set Workspace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionFff">
+   <property name="text">
+    <string>fff</string>
+   </property>
+  </action>
+  <action name="actionIncreasePointSize">
+   <property name="text">
+    <string>Increase Point Size</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Up</string>
+   </property>
+  </action>
+  <action name="actionDecreasePointSize">
+   <property name="text">
+    <string>Decrease Point Size</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Down</string>
+   </property>
+  </action>
+  <action name="actionIncreaseLineWidth">
+   <property name="text">
+    <string>Increase Line Width</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+=</string>
+   </property>
+  </action>
+  <action name="actionDecreaseLineWidth">
+   <property name="text">
+    <string>Decrease Line Width</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionICP">
+   <property name="text">
+    <string>ICP</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionRefineAxis">
+   <property name="text">
+    <string>Refine Axis</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionGenerateObject">
+   <property name="text">
+    <string>Generate Object</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionAutoReg">
+   <property name="text">
+    <string>AutoReg</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
