@@ -86,7 +86,7 @@ namespace OSGUtility
 
   osg::Geode* drawTetrahedron(const osg::Vec3& center, double radius, const osg::Vec4& color)
   {
-    double offset = 2*radius/std::sqrt(3);
+    double offset = 2*radius/std::sqrt(3.0);
     osg::Vec3 corner_1 = center + osg::Vec3(-offset, -offset, -offset);
     osg::Vec3 corner_2 = center + osg::Vec3(+offset, +offset, -offset);
     osg::Vec3 corner_3 = center + osg::Vec3(+offset, -offset, +offset);

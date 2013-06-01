@@ -4,7 +4,6 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(3rdParty)
 find_package(Boost REQUIRED system thread)
-find_package(CGAL REQUIRED)
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 find_package(Qt4 REQUIRED QtCore QtGui QtOpenGL QtXml)
 find_package(PCL REQUIRED common io registration kdtree search)
@@ -12,21 +11,12 @@ find_package(PCL REQUIRED common io registration kdtree search)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-link_directories(${CGAL_LIBRARIES_DIR})
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(OPENSCENEGRAPH_FOUND)
     include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 endif(OPENSCENEGRAPH_FOUND)
-
-if(CGAL_FOUND)
-  include_directories(${CGAL_INCLUDE_DIRS})
-  set(CMAKE_MODULE_PATH ${CGAL_DIR}/cmake/modules)
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CGAL_DIR})
-  include(CGAL_Macros)
-endif(CGAL_FOUND)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
