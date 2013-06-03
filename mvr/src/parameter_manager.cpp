@@ -14,7 +14,8 @@ ParameterManager::ParameterManager(void)
   registration_max_distance_(new DoubleParameter("Max Distance", "Max Distance", 4, 1, 16, 1.0)),
   start_object_(new IntParameter("Start object", "Start object", -1, -1, -1, 1)),
   end_object_(new IntParameter("End object", "End object", -1, -1, -1, 1)),
-  current_object_(new IntParameter("Current object", "Current object", -1, -1, -1, 1))
+  current_object_(new IntParameter("Current object", "Current object", -1, -1, -1, 1)),
+  repeat_times_(new IntParameter("Repeat times", "Repeat times", 5, 1, 100, 1))
 {
 }
 
@@ -136,18 +137,20 @@ bool ParameterManager::getRegistrationLUMParameters(int& segment_threshold, int&
   return true;
 }
 
-bool ParameterManager::getRegistrationICPParameters(int& max_iterations, double& max_distance, int& object)
+bool ParameterManager::getRegistrationICPParameters(int& max_iterations, double& max_distance, int& object, int& repeat_times)
 {
   ParameterDialog parameter_dialog("Registration Parameters", MainWindow::getInstance());
   parameter_dialog.addParameter(registration_max_iterations_);
   parameter_dialog.addParameter(registration_max_distance_);
   parameter_dialog.addParameter(current_object_);
+  parameter_dialog.addParameter(repeat_times_);
   if (!parameter_dialog.exec() == QDialog::Accepted)
     return false;
 
   max_iterations = *registration_max_iterations_;
   max_distance = *registration_max_distance_;
   object = *current_object_;
+  repeat_times = *repeat_times_;
 
   return true;
 }

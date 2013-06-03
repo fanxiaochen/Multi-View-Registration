@@ -31,7 +31,7 @@ public:
   bool getRegistrationLUMParameters(int& segment_threshold, int& max_iterations, double& max_distance,
     int& start_object, int& end_object, bool with_objects=true);
   bool getRegistrationLUMParameters(int& segment_threshold, int& max_iterations, double& max_distance, int& object);
-  bool getRegistrationICPParameters(int& max_iterations, double& max_distance, int& object);
+  bool getRegistrationICPParameters(int& max_iterations, double& max_distance, int& object, int& repeat_times);
 
 protected:
   void addObjectParameters(ParameterDialog* parameter_dialog, bool with_objects);
@@ -48,6 +48,8 @@ private:
   IntParameter*                                       start_object_;
   IntParameter*                                       end_object_;
   IntParameter*                                       current_object_;
+
+  IntParameter*                                       repeat_times_;
 
 };
 

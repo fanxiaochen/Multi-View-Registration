@@ -21,7 +21,6 @@ public:
   virtual const char* className() const {return "Registrator";}
 
   void init(void);
-  bool load(void);
   void reset(void);
 
   osg::Vec3 getPivotPoint() const;
@@ -30,17 +29,20 @@ public:
 
   void setPivotPoint(const osg::Vec3& pivot_point);
   void setAxisNormal(const osg::Vec3& axis_normal);
-
+  void save(int object);
+  void load(int object);
   virtual void toggleRendering(void);
 
   void saveRegisteredPoints(int object);
   void refineAxis(int object);
   void registrationLUM(int segment_threshold, int max_iterations, double max_distance, int object);
   void registrationICP(int max_iterations, double max_distance, int object);
+  void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
 
   bool isAxisAccurate();
 
   public slots:
+    void load(void);
     void save(void);
     void saveRegisteredPoints(void);
     void refineAxis(void);
@@ -55,7 +57,7 @@ protected:
   void visualizeError(void);
   void visualizeAxis(void);
   void save(const QString& filename);
-  bool load(const QString& filename);
+  void load(const QString& filename);
 
 protected:
   osg::ref_ptr<osg::MatrixTransform>                  pivot_point_;
