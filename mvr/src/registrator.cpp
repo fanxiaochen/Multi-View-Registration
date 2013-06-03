@@ -152,15 +152,10 @@ void Registrator::init(void)
   osg::BoundingSphere boundingSphere = MainWindow::getInstance()->getOSGViewerWidget()->getBound();
   double radius = boundingSphere.radius();
 
-  if (load())
-  {
-    normal_point_->setMatrix(osg::Matrix::translate(getPivotPoint()+getAxisNormal()*radius));
-  }
-  else
-  {
-    pivot_point_->setMatrix(osg::Matrix::translate(boundingSphere.center()));
-    normal_point_->setMatrix(osg::Matrix::translate(boundingSphere.center()+osg::Vec3(0, -radius, 0)));
-  }
+  
+  pivot_point_->setMatrix(osg::Matrix::translate(boundingSphere.center()));
+  normal_point_->setMatrix(osg::Matrix::translate(boundingSphere.center()+osg::Vec3(0, -radius, 0)));
+
 
   initilized_ = true;
 
@@ -257,11 +252,11 @@ void Registrator::updateImpl()
   return;
 }
 
-bool Registrator::load(const QString& filename)
+void Registrator::load(const QString& filename)
 {
   FILE *file = fopen(filename.toStdString().c_str(),"r");
   if (file == NULL)
-    return false;
+    return;
 
   double x, y, z;
   double nx, ny, nz;
@@ -272,13 +267,25 @@ bool Registrator::load(const QString& filename)
   setPivotPoint(osg::Vec3(x, y, z));
   setAxisNormal(osg::Vec3(nx, ny, nz));
 
-  return true;
+  return;
 }
 
-bool Registrator::load(void)
+void Registrator::load(void)
 {
-  const QString& workspace = MainWindow::getInstance()->getWorkspace();
-  return load(workspace+"/axis.txt");
+  int object;
+  if (!ParameterManager::getInstance().getObjectParameter(object))
+    return;
+
+  load(object);
+}
+
+void Registrator::load(int object)
+{
+  MainWindow* main_window = MainWindow::getInstance();
+  FileSystemModel* model = main_window->getFileSystemModel();
+  QString filename = QString((model->getPointsFolder(object)+"/axis.txt").c_str());
+    
+  load(filename);
 }
 
 void Registrator::save(const QString& filename)
@@ -297,14 +304,21 @@ void Registrator::save(const QString& filename)
   return;
 }
 
-void Registrator::save(void)
+void Registrator::save()
 {
-  MainWindow* main_window = MainWindow::getInstance();
-  QString filename = QFileDialog::getSaveFileName(main_window,
-    "Save Registrator", main_window->getWorkspace(), "Registrator (*.txt)");
-  if (filename.isEmpty())
+  int object;
+  if (!ParameterManager::getInstance().getObjectParameter(object))
     return;
 
+  save(object);
+}
+
+
+void Registrator::save(int object)
+{
+  MainWindow* main_window = MainWindow::getInstance();
+  FileSystemModel* model = main_window->getFileSystemModel();
+  QString filename = QString((model->getPointsFolder(object)+"/axis.txt").c_str());
   save(filename);
 
   return;
@@ -506,6 +520,14 @@ void Registrator::computeError(int object)
   return;
 }
 
+void Registrator::registrationICP(int max_iterations, double max_distance, int object, int repeat_times)
+{
+  for(size_t i = 0; i < repeat_times; i++)
+  {
+    registrationICP(max_iterations, max_distance, object);
+  }
+}
+
 void Registrator::registrationICP(int max_iterations, double max_distance, int object)
 {
   FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
@@ -571,12 +593,12 @@ void Registrator::registrationICP(int max_iterations, double max_distance, int o
 
 void Registrator::registrationICP(void)
 {
-  int max_iterations, object;
+  int max_iterations, object, repeat_times;
   double max_distance;
-  if (!ParameterManager::getInstance().getRegistrationICPParameters(max_iterations, max_distance, object))
+  if (!ParameterManager::getInstance().getRegistrationICPParameters(max_iterations, max_distance, object, repeat_times))
     return;
 
-    QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
+  QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
   connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
 
   QString running_message = QString("ICP registration for object %1 is running!").arg(object);
@@ -585,7 +607,7 @@ void Registrator::registrationICP(void)
   connect(watcher, SIGNAL(started()), messenger, SLOT(sendRunningMessage()));
   connect(watcher, SIGNAL(finished()), messenger, SLOT(sendFinishedMessage()));
 
-  watcher->setFuture(QtConcurrent::run(this, &Registrator::registrationICP, max_iterations, max_distance, object));
+  watcher->setFuture(QtConcurrent::run(this, &Registrator::registrationICP, max_iterations, max_distance, object, repeat_times));
 
   return;
 }

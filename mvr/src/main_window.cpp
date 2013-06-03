@@ -117,6 +117,8 @@ void MainWindow::init(void)
   connect(ui_.actionDecreaseLineWidth, SIGNAL(triggered()), osg_viewer_widget_, SLOT(decreaseLineWidth()));
 
   //registration menu
+  connect(ui_.actionLoadAxis, SIGNAL(triggered()), registrator_, SLOT(load()));
+  connect(ui_.actionSaveAxis, SIGNAL(triggered()), registrator_, SLOT(save()));
   connect(ui_.actionICP, SIGNAL(triggered()), registrator_, SLOT(registrationICP()));
   connect(ui_.actionRefineAxis, SIGNAL(triggered()), registrator_, SLOT(refineAxis()));
   connect(ui_.actionGenerateObject, SIGNAL(triggered()), registrator_, SLOT(registrationLUM()));

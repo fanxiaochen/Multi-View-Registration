@@ -49,6 +49,9 @@
     <property name="title">
      <string>Registration</string>
     </property>
+    <addaction name="actionLoadAxis"/>
+    <addaction name="actionSaveAxis"/>
+    <addaction name="separator"/>
     <addaction name="actionICP"/>
     <addaction name="actionRefineAxis"/>
     <addaction name="actionGenerateObject"/>
@@ -66,11 +69,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
-   </property>
-  </action>
-  <action name="actionFff">
-   <property name="text">
-    <string>fff</string>
    </property>
   </action>
   <action name="actionIncreasePointSize">
@@ -135,6 +133,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionSaveAxis">
+   <property name="text">
+    <string>Save Axis</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionLoadAxis">
+   <property name="text">
+    <string>Load Axis</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>

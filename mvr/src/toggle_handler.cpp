@@ -25,7 +25,8 @@ bool ToggleHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdap
   case(osgGA::GUIEventAdapter::KEYUP):
     {
       osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
-      if (view && ea.getKey() == key_) {
+      if (view && ea.getKey() == key_) 
+      {
         renderable_->toggleRendering();
         return true;
       }
