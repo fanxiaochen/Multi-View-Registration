@@ -36,7 +36,12 @@ PointCloud::PointCloud(void)
   :translate_dragger_(new osgManipulator::TranslateAxisDragger),
   trackball_dragger_(new osgManipulator::TrackballDragger),
   show_draggers_(false),
-  registered_(false)
+  registered_(false),
+  triangulation_(new CGAL::Delaunay()),
+  point_graph_(new boost::PointGraph()),
+  point_graph_threshold_(-1.0),
+  points_num_(0),
+  noise_points_num_(0)
 {
   translate_dragger_->setupDefaultGeometry();
   translate_dragger_->setHandleEvents(true);
@@ -57,7 +62,8 @@ PointCloud::PointCloud(void)
 
 PointCloud::~PointCloud(void)
 {
-
+  delete triangulation_;
+  delete point_graph_;
 }
 
 void PointCloud::setRegisterState(bool registered)
@@ -414,92 +420,105 @@ void PointCloud::initRotation(void)
 //  }
 //};
 
-//void PointCloud::denoise(int segment_threshold, double triangle_length)
-//{
-//  QMutexLocker locker(&mutex_);
-//
-//  initPointGraph(ParameterManager::getInstance().getTriangleLength());
-//
-//  boost::PointGraph& g_point = *point_graph_;
-//  std::vector<boost::PointGraphTraits::vertex_descriptor> component(boost::num_vertices(g_point));
-//  size_t component_num = boost::connected_components(g_point, &component[0]);
-//
-//  std::vector<std::vector<boost::PointGraphTraits::vertex_descriptor> > components(component_num);
-//  for (size_t i = 0; i < points_num_; ++ i)
-//    components[component[i]].push_back(i);
-//
-//  for (size_t i = 0, i_end = components.size(); i < i_end; ++ i)
-//  {
-//    if (components[i].size() >= segment_threshold)
-//    {
-//      for (size_t j = 0, j_end = components[i].size(); j < j_end; ++ j)
-//        at(components[i][j]).label = PCLRichPoint::LABEL_OBJECT;
-//      continue;
-//    }
-//      
-//    for (size_t j = 0, j_end = components[i].size(); j < j_end; ++ j)
-//      at(components[i][j]).label = PCLRichPoint::LABEL_NOISE;
-//
-//    noise_points_num_ += components[i].size();
-//  }
-//  points_num_ -= noise_points_num_;
-//
-//  std::sort(points.begin(), points.end(), CompareByLabel());
-//
-//  triangulation_->clear();
-//  g_point.clear();
-//
-//  expire();
-//
-//  return;
-//}
+void PointCloud::denoise(int segment_threshold, double triangle_length)
+{
+  QMutexLocker locker(&mutex_);
+  
+  points_num_ = size();
+  std::cout<<"triangle length:"<<ParameterManager::getInstance().getTriangleLength()<<std::endl;
+  initPointGraph(ParameterManager::getInstance().getTriangleLength());
 
-//void PointCloud::initPointGraph(double distance_threshold)
-//{
-//  if (distance_threshold == point_graph_threshold_
-//    && boost::num_edges(*point_graph_) != 0)
-//    return;
-//
-//  triangulate();
-//  point_graph_threshold_ = distance_threshold;
-//
-//  boost::PointGraph& g_point = *point_graph_;
-//  g_point = boost::PointGraph(points_num_);
-//
-//  size_t t = 8;
-//
-//  for (CGAL::Delaunay::Finite_edges_iterator it = triangulation_->finite_edges_begin();
-//    it != triangulation_->finite_edges_end(); ++ it)
-//  {
-//    const CGAL::Delaunay::Cell_handle& cell_handle  = it->first;
-//    const CGAL::Delaunay::Vertex_handle& source_handle = cell_handle->vertex(it->second);
-//    const CGAL::Delaunay::Vertex_handle& target_handle = cell_handle->vertex(it->third);
-//    double distance_L1 = std::sqrt(CGAL::squared_distance(source_handle->point(), target_handle->point()));
-//    if (distance_L1 > point_graph_threshold_)
-//      continue;
-//
-//    size_t source_id = source_handle->info();
-//    size_t target_id = target_handle->info();
-//    assert (source_id < plant_points_num_ && target_id < plant_points_num_);
-//    WeightedEdge weighted_edge(distance_L1);
-//    boost::add_edge(source_id, target_id, weighted_edge, g_point);
-//  }
-//
-//  return;
-//}
+  boost::PointGraph& g_point = *point_graph_;
+  std::cout<<"g_point size:"<<boost::num_vertices(g_point)<<std::endl;
+  std::vector<boost::PointGraphTraits::vertex_descriptor> component(boost::num_vertices(g_point));
+  size_t component_num = boost::connected_components(g_point, &component[0]);
+  std::cout<<"component num:"<<component_num<<std::endl;
 
-//void PointCloud::triangulate()
-//{
-//  if (triangulation_->number_of_vertices() != 0)
-//    return;
-//
-//  for (size_t i = 0, i_end = points_num_; i < i_end; ++ i)
-//  {
-//    const PCLRichPoint& point = at(i);
-//    CGAL::Delaunay::Point delaunay_point(point.x, point.y, point.z);
-//    CGAL::Delaunay::Vertex_handle vertex_handle = triangulation_->insert(delaunay_point);
-//    vertex_handle->info() = i;
-//  }
-//
-//  return;
-//}
+  std::vector<std::vector<boost::PointGraphTraits::vertex_descriptor> > components(component_num);
+  for (size_t i = 0; i < points_num_; ++ i)
+    components[component[i]].push_back(i);
+  
+  osg::ref_ptr<PointCloud> denoised_cloud = new PointCloud; 
+  for (size_t i = 0, i_end = components.size(); i < i_end; ++ i)
+  {
+    std::cout<<components[i].size()<<std::endl;
+    if (components[i].size() >= segment_threshold)
+    {
+      for (size_t j = 0, j_end = components[i].size(); j < j_end; ++ j)
+        denoised_cloud->push_back(at(components[i][j]));
+      std::cout<<"denoised_cloud size:"<<denoised_cloud->size()<<std::endl;
+      continue;
+    }
+
+    noise_points_num_ += components[i].size();
+  }
+
+  for(size_t i = 0, i_end = denoised_cloud->size(); i < i_end; i++)
+    at(i) = denoised_cloud->at(i);
+  points_num_ = denoised_cloud->size();
+  int k = points_num_;
+  for(std::vector<PCLRichPoint,Eigen::aligned_allocator<PCLRichPoint>>::iterator it 
+    = points.begin()+points_num_; it != points.end(); it++)
+  {
+    points.erase(it);
+    std::cout<<"remove "<<k--<<std::endl;
+  }
+    
+
+  triangulation_->clear();
+  g_point.clear();
+
+  expire();
+
+  return;
+}
+
+void PointCloud::initPointGraph(double distance_threshold)
+{
+  if (distance_threshold == point_graph_threshold_
+    && boost::num_edges(*point_graph_) != 0)
+    return;
+
+  triangulate();
+  point_graph_threshold_ = distance_threshold;
+
+  boost::PointGraph& g_point = *point_graph_;
+  g_point = boost::PointGraph(points_num_);
+
+  size_t t = 8;
+
+  for (CGAL::Delaunay::Finite_edges_iterator it = triangulation_->finite_edges_begin();
+    it != triangulation_->finite_edges_end(); ++ it)
+  {
+    const CGAL::Delaunay::Cell_handle& cell_handle  = it->first;
+    const CGAL::Delaunay::Vertex_handle& source_handle = cell_handle->vertex(it->second);
+    const CGAL::Delaunay::Vertex_handle& target_handle = cell_handle->vertex(it->third);
+    double distance_L1 = std::sqrt(CGAL::squared_distance(source_handle->point(), target_handle->point()));
+    if (distance_L1 > point_graph_threshold_)
+      continue;
+
+    size_t source_id = source_handle->info();
+    size_t target_id = target_handle->info();
+    assert (source_id < plant_points_num_ && target_id < plant_points_num_);
+    WeightedEdge weighted_edge(distance_L1);
+    boost::add_edge(source_id, target_id, weighted_edge, g_point);
+  }
+
+  return;
+}
+
+void PointCloud::triangulate() const
+{
+  if (triangulation_->number_of_vertices() != 0)
+    return;
+  std::cout<<"initial triangulation vertices num:"<<triangulation_->number_of_vertices()<<std::endl;
+  for (size_t i = 0, i_end = points_num_; i < i_end; ++ i)
+  {
+    const PCLRichPoint& point = at(i);
+    CGAL::Delaunay::Point delaunay_point(point.x, point.y, point.z);
+    CGAL::Delaunay::Vertex_handle vertex_handle = triangulation_->insert(delaunay_point);
+    vertex_handle->info() = i;
+  }
+  std::cout<<"final triangulation vertices num:"<<triangulation_->number_of_vertices()<<std::endl;
+  return;
+}

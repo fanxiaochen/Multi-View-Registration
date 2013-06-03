@@ -3,7 +3,7 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(3rdParty)
-find_package(Boost REQUIRED system thread)
+find_package(Boost REQUIRED system thread chrono)
 find_package(CGAL REQUIRED)
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 find_package(Qt4 REQUIRED QtCore QtGui QtOpenGL QtXml)

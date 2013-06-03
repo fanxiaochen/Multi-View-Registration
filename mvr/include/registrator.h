@@ -33,7 +33,7 @@ public:
   void load(int object);
   virtual void toggleRendering(void);
 
-  void saveRegisteredPoints(int object);
+  void saveRegisteredPoints(int object, int segment_threshold);
   void refineAxis(int object);
   void registrationLUM(int segment_threshold, int max_iterations, double max_distance, int object);
   void registrationICP(int max_iterations, double max_distance, int object);
@@ -45,7 +45,6 @@ public:
   public slots:
     void load(void);
     void save(void);
-    void saveRegisteredPoints(void);
     void refineAxis(void);
     void registrationICP(void);
     void registrationLUM(void);

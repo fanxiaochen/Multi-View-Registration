@@ -338,7 +338,7 @@ osg::Matrix Registrator::getRotationMatrix(double angle) const
   return matrix;
 }
 
-void Registrator::saveRegisteredPoints(int object)
+void Registrator::saveRegisteredPoints(int object, int segment_threshold)
 {
   QMutexLocker locker(&mutex_);
 
@@ -357,24 +357,26 @@ void Registrator::saveRegisteredPoints(int object)
     const osg::Matrix& matrix = point_cloud->getMatrix();
     for (size_t j = 0, j_end = point_cloud->size(); j < j_end; ++ j)
     {
-    PCLRichPoint registered_point = point_cloud->at(j);
+      PCLRichPoint registered_point = point_cloud->at(j);
 
-    osg::Vec3 point(registered_point.x, registered_point.y, registered_point.z);
-    point = matrix.preMult(point);
-    registered_point.x = point.x();
-    registered_point.y = point.y();
-    registered_point.z = point.z();
+      osg::Vec3 point(registered_point.x, registered_point.y, registered_point.z);
+      point = matrix.preMult(point);
+      registered_point.x = point.x();
+      registered_point.y = point.y();
+      registered_point.z = point.z();
 
-    osg::Vec3 normal(registered_point.normal_x, registered_point.normal_y, registered_point.normal_z);
-    normal = matrix.preMult(normal);
-    registered_point.normal_x = normal.x();
-    registered_point.normal_y = normal.y();
-    registered_point.normal_z = normal.z();
+      osg::Vec3 normal(registered_point.normal_x, registered_point.normal_y, registered_point.normal_z);
+      normal = matrix.preMult(normal);
+      registered_point.normal_x = normal.x();
+      registered_point.normal_y = normal.y();
+      registered_point.normal_z = normal.z();
 
-    registered_points.push_back(registered_point);
+      registered_points.push_back(registered_point);
     }
   }
 
+  /*registered_points.denoise(object, segment_threshold);
+  std::cout<<"finish denoise"<<std::endl;*/
   std::string filename = folder+"/points.pcd";
   registered_points.save(filename);
 
@@ -392,15 +394,6 @@ void Registrator::saveRegisteredPoints(int object)
   model->updatePointCloud(object);
 
   return;
-}
-
-void Registrator::saveRegisteredPoints(void)
-{
-  int object;
-  if (!ParameterManager::getInstance().getObjectParameter(object))
-    return;
-
-  saveRegisteredPoints(object);
 }
 
 void Registrator::refineAxis(int object)
@@ -673,7 +666,7 @@ void Registrator::registrationLUM(int segment_threshold, int max_iterations, dou
     computeError(object);
   }
 
-  saveRegisteredPoints(object);
+  saveRegisteredPoints(object, segment_threshold);
   refineAxis(object);
 
   expire();
@@ -705,7 +698,7 @@ void Registrator::registrationLUM(void)
 void Registrator::registration(void)
 {
   int object, segment_threshold;
-  if (!ParameterManager::getInstance().getObjectParameter(object))
+  if (!ParameterManager::getInstance().getRegistrationParameters(object, segment_threshold))
     return;
 
   QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
@@ -739,7 +732,7 @@ void Registrator::registration(int object, int segment_threshold)
     computeError(object);
   }
 
-  saveRegisteredPoints(object);
+  saveRegisteredPoints(object, segment_threshold);
   refineAxis(object);
 
   expire();

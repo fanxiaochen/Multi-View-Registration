@@ -16,7 +16,8 @@ ParameterManager::ParameterManager(void)
   end_object_(new IntParameter("End object", "End object", -1, -1, -1, 1)),
   current_object_(new IntParameter("Current object", "Current object", -1, -1, -1, 1)),
   repeat_times_(new IntParameter("Repeat times", "Repeat times", 5, 1, 100, 1)),
-  triangle_length_(new DoubleParameter("Triangle Length", "Triangle Length", 2.5, 1.0, 8.0, 0.1))
+  triangle_length_(new DoubleParameter("Triangle Length", "Triangle Length", 2.5, 1.0, 8.0, 0.1)),
+  segment_threshold_(new IntParameter("Segment Threshold", "Segment Threshold", 10, 10, 500, 10))
 {
 }
 
