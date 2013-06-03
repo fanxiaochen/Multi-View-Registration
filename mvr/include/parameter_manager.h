@@ -21,17 +21,17 @@ public:
 
 
   double getRegistrationMaxDistance(void) const;
-
+  double getTriangleLength(void) const;
 
   bool getObjectParameter(int& object);
   bool getObjectParameters(int& start_object, int& end_object, int& downsampling);
-
 
   bool getRegistrationLUMParameters(int& segment_threshold, int& max_iterations, double& max_distance);
   bool getRegistrationLUMParameters(int& segment_threshold, int& max_iterations, double& max_distance,
     int& start_object, int& end_object, bool with_objects=true);
   bool getRegistrationLUMParameters(int& segment_threshold, int& max_iterations, double& max_distance, int& object);
   bool getRegistrationICPParameters(int& max_iterations, double& max_distance, int& object, int& repeat_times);
+  bool getRegistrationParameters(int& object, int& segment_threshold);
 
 protected:
   void addObjectParameters(ParameterDialog* parameter_dialog, bool with_objects);
@@ -50,6 +50,9 @@ private:
   IntParameter*                                       current_object_;
 
   IntParameter*                                       repeat_times_;
+
+  DoubleParameter*                                    triangle_length_;
+  IntParameter*                                       segment_threshold_;
 
 };
 

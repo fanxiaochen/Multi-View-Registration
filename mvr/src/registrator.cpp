@@ -357,21 +357,21 @@ void Registrator::saveRegisteredPoints(int object)
     const osg::Matrix& matrix = point_cloud->getMatrix();
     for (size_t j = 0, j_end = point_cloud->size(); j < j_end; ++ j)
     {
-    PCLRichPoint plant_point = point_cloud->at(j);
+    PCLRichPoint registered_point = point_cloud->at(j);
 
-    osg::Vec3 point(plant_point.x, plant_point.y, plant_point.z);
+    osg::Vec3 point(registered_point.x, registered_point.y, registered_point.z);
     point = matrix.preMult(point);
-    plant_point.x = point.x();
-    plant_point.y = point.y();
-    plant_point.z = point.z();
+    registered_point.x = point.x();
+    registered_point.y = point.y();
+    registered_point.z = point.z();
 
-    osg::Vec3 normal(plant_point.normal_x, plant_point.normal_y, plant_point.normal_z);
+    osg::Vec3 normal(registered_point.normal_x, registered_point.normal_y, registered_point.normal_z);
     normal = matrix.preMult(normal);
-    plant_point.normal_x = normal.x();
-    plant_point.normal_y = normal.y();
-    plant_point.normal_z = normal.z();
+    registered_point.normal_x = normal.x();
+    registered_point.normal_y = normal.y();
+    registered_point.normal_z = normal.z();
 
-    registered_points.push_back(plant_point);
+    registered_points.push_back(registered_point);
     }
   }
 
@@ -702,6 +702,51 @@ void Registrator::registrationLUM(void)
   return;
 }
 
+void Registrator::registration(void)
+{
+  int object, segment_threshold;
+  if (!ParameterManager::getInstance().getObjectParameter(object))
+    return;
+
+  QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
+  connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
+
+  QString running_message = QString("Registration for object %1 is running!").arg(object);
+  QString finished_message = QString("Registration for object %1 finished!").arg(object);
+  Messenger* messenger = new Messenger(running_message, finished_message, this);
+  connect(watcher, SIGNAL(started()), messenger, SLOT(sendRunningMessage()));
+  connect(watcher, SIGNAL(finished()), messenger, SLOT(sendFinishedMessage()));
+
+  watcher->setFuture(QtConcurrent::run(this, &Registrator::registration, object, segment_threshold));
+}
+
+void Registrator::registration(int object, int segment_threshold)
+{
+  std::cout << "registration: object " << object << " running..." << std::endl;
+
+  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+  for (size_t view = 0; view < 12; ++ view)
+  {
+    osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, view);
+//    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
+    point_cloud->initRotation();
+    point_cloud->setRegisterState(true);
+  }
+
+  if (show_error_)
+  {
+    QMutexLocker locker(&mutex_);
+    computeError(object);
+  }
+
+  saveRegisteredPoints(object);
+  refineAxis(object);
+
+  expire();
+
+  return;
+}
+
 bool Registrator::isAxisAccurate()
 {
   bool flag = false;
@@ -711,7 +756,7 @@ bool Registrator::isAxisAccurate()
 
 void Registrator::automaticRegistration(void)
 {
-
+  
 }
 
 void Registrator::toggleRendering()

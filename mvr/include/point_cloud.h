@@ -42,6 +42,7 @@ public:
   void setRegisterState(bool registered);
 
   void registration(int segment_threshold, int max_iterations, double max_distance);
+//  void denoise(int segment_threshold, double triangle_length);
 
   int getObject(void) const;
   int getView(void) const;
@@ -64,6 +65,10 @@ protected:
   PointCloud* getPrevObject(void);
   PointCloud* getNextObject(void);
 
+  
+//  void initPointGraph(double distance_threshold);
+//  void triangulate(void);
+
   void loadTransformation(void);
   void saveTransformation(void);
   void deleteTransformation(void);
@@ -73,7 +78,12 @@ protected:
 protected:
   std::string                     filename_;
   size_t                          points_num_;
+  size_t                          noise_points_num_;
   osg::Vec4                       color_;
+
+//  boost::PointGraph*              point_graph_;
+//  double                          point_graph_threshold_;
+//  mutable CGAL::Delaunay*         triangulation_;
 
 private:
   osg::ref_ptr<osgManipulator::TranslateAxisDragger>  translate_dragger_;

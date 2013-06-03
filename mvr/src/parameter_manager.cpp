@@ -15,7 +15,8 @@ ParameterManager::ParameterManager(void)
   start_object_(new IntParameter("Start object", "Start object", -1, -1, -1, 1)),
   end_object_(new IntParameter("End object", "End object", -1, -1, -1, 1)),
   current_object_(new IntParameter("Current object", "Current object", -1, -1, -1, 1)),
-  repeat_times_(new IntParameter("Repeat times", "Repeat times", 5, 1, 100, 1))
+  repeat_times_(new IntParameter("Repeat times", "Repeat times", 5, 1, 100, 1)),
+  triangle_length_(new DoubleParameter("Triangle Length", "Triangle Length", 2.5, 1.0, 8.0, 0.1))
 {
 }
 
@@ -151,6 +152,26 @@ bool ParameterManager::getRegistrationICPParameters(int& max_iterations, double&
   max_distance = *registration_max_distance_;
   object = *current_object_;
   repeat_times = *repeat_times_;
+
+  return true;
+}
+
+double ParameterManager::getTriangleLength(void) const
+{
+  return *triangle_length_;
+}
+
+bool ParameterManager::getRegistrationParameters(int& object, int& segment_threshold)
+{
+  ParameterDialog parameter_dialog("Registration Parameters", MainWindow::getInstance());
+  parameter_dialog.addParameter(current_object_);
+  parameter_dialog.addParameter(segment_threshold_);
+
+  if (!parameter_dialog.exec() == QDialog::Accepted)
+    return false;
+
+  segment_threshold = *segment_threshold_;
+  object = *current_object_;
 
   return true;
 }

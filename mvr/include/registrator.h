@@ -38,6 +38,7 @@ public:
   void registrationLUM(int segment_threshold, int max_iterations, double max_distance, int object);
   void registrationICP(int max_iterations, double max_distance, int object);
   void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
+  void registration(int object, int segment_threshold);
 
   bool isAxisAccurate();
 
@@ -48,6 +49,7 @@ public:
     void refineAxis(void);
     void registrationICP(void);
     void registrationLUM(void);
+    void registration(void);
     void automaticRegistration(void);
 
 protected:

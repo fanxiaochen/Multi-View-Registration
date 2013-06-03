@@ -121,7 +121,7 @@ void MainWindow::init(void)
   connect(ui_.actionSaveAxis, SIGNAL(triggered()), registrator_, SLOT(save()));
   connect(ui_.actionICP, SIGNAL(triggered()), registrator_, SLOT(registrationICP()));
   connect(ui_.actionRefineAxis, SIGNAL(triggered()), registrator_, SLOT(refineAxis()));
-  connect(ui_.actionGenerateObject, SIGNAL(triggered()), registrator_, SLOT(registrationLUM()));
+  connect(ui_.actionGenerateObject, SIGNAL(triggered()), registrator_, SLOT(registration()));
 
   loadSettings();
 

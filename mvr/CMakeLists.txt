@@ -4,6 +4,7 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(3rdParty)
 find_package(Boost REQUIRED system thread)
+find_package(CGAL REQUIRED)
 find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgManipulator osgUtil)
 find_package(Qt4 REQUIRED QtCore QtGui QtOpenGL QtXml)
 find_package(PCL REQUIRED common io registration kdtree search)
@@ -11,12 +12,25 @@ find_package(PCL REQUIRED common io registration kdtree search)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
+link_directories(${CGAL_LIBRARIES_DIR})
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(OPENSCENEGRAPH_FOUND)
     include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
 endif(OPENSCENEGRAPH_FOUND)
+
+if(CGAL_FOUND)
+  include_directories(${CGAL_INCLUDE_DIRS})
+  set(CMAKE_MODULE_PATH ${CGAL_DIR}/cmake/modules)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CGAL_DIR})
+  include(CGAL_Macros)
+  find_package(GMP REQUIRED)
+  if(GMP_FOUND)
+    include_directories(${GMP_INCLUDE_DIR})
+  endif(GMP_FOUND)
+endif(CGAL_FOUND)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -96,7 +110,7 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 set(exe_name mvr)
 add_executable(${exe_name} ${srcs} ${incs})
 target_link_libraries(${exe_name} ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${OPENSCENEGRAPH_LIBRARIES} ${QT_QTOPENGL_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${CGAL_LIBRARIES}
- ${PCL_COMMON_LIBRARY} ${PCL_IO_LIBRARY} ${PCL_REGISTRATION_LIBRARY} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${ThirdParty_LIBS})
+ ${GMP_LIBRARIES} ${PCL_COMMON_LIBRARY} ${PCL_IO_LIBRARY} ${PCL_REGISTRATION_LIBRARY} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${ThirdParty_LIBS})
 
 if(WIN32 AND MSVC)
   set_target_properties(${exe_name} PROPERTIES LINK_FLAGS_RELEASE /OPT:REF)
