@@ -441,12 +441,10 @@ void PointCloud::denoise(int segment_threshold, double triangle_length)
   osg::ref_ptr<PointCloud> denoised_cloud = new PointCloud; 
   for (size_t i = 0, i_end = components.size(); i < i_end; ++ i)
   {
-    std::cout<<components[i].size()<<std::endl;
     if (components[i].size() >= segment_threshold)
     {
       for (size_t j = 0, j_end = components[i].size(); j < j_end; ++ j)
         denoised_cloud->push_back(at(components[i][j]));
-      std::cout<<"denoised_cloud size:"<<denoised_cloud->size()<<std::endl;
       continue;
     }
 
@@ -456,15 +454,8 @@ void PointCloud::denoise(int segment_threshold, double triangle_length)
   for(size_t i = 0, i_end = denoised_cloud->size(); i < i_end; i++)
     at(i) = denoised_cloud->at(i);
   points_num_ = denoised_cloud->size();
-  int k = points_num_;
-  for(std::vector<PCLRichPoint,Eigen::aligned_allocator<PCLRichPoint>>::iterator it 
-    = points.begin()+points_num_; it != points.end(); it++)
-  {
-    points.erase(it);
-    std::cout<<"remove "<<k--<<std::endl;
-  }
+  points.resize(points_num_);
     
-
   triangulation_->clear();
   g_point.clear();
 

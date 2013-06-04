@@ -721,7 +721,7 @@ void Registrator::registration(int object, int segment_threshold)
   for (size_t view = 0; view < 12; ++ view)
   {
     osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, view);
-//    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
+    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
     point_cloud->initRotation();
     point_cloud->setRegisterState(true);
   }
