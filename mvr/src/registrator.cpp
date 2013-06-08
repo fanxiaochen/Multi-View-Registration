@@ -435,9 +435,7 @@ void Registrator::refineAxis(int object)
   normal.normalize();
   setAxisNormal(normal);
 
-  // solve the point of the axis, use the same idea as that used to solve the axis
-  // here Rp=p, where R is the 4x4 matrix, and p is the homogeneous coordinate of the axis point
-  // and we convert it into Ax=b format
+ 
   for (size_t i = 0, i_end = matrices.size(); i < i_end; ++ i)
     for (size_t j = 0; j < 3; ++ j)
       b(i*3+j) = -matrices[i](3, j);
@@ -747,10 +745,36 @@ bool Registrator::isAxisAccurate()
   return flag;
 }
 
+void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance)
+{
+  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+  size_t k = 0;
+  while (k < 12)
+  {
+
+  }
+}
+
 void Registrator::automaticRegistration(void)
 {
-  
+  int object, segment_threshold, max_iterations;
+  double max_distance;
+  if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, max_distance))
+    return;
+
+  QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
+  connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
+
+  QString running_message = QString("Registration for object %1 is running!").arg(object);
+  QString finished_message = QString("Registration for object %1 finished!").arg(object);
+  Messenger* messenger = new Messenger(running_message, finished_message, this);
+  connect(watcher, SIGNAL(started()), messenger, SLOT(sendRunningMessage()));
+  connect(watcher, SIGNAL(finished()), messenger, SLOT(sendFinishedMessage()));
+
+  watcher->setFuture(QtConcurrent::run(this, &Registrator::automaticRegistration, object, segment_threshold, max_iterations, max_distance));
 }
+
+
 
 void Registrator::toggleRendering()
 {

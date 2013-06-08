@@ -176,3 +176,23 @@ bool ParameterManager::getRegistrationParameters(int& object, int& segment_thres
 
   return true;
 }
+
+
+bool ParameterManager::getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, double& max_distance)
+{
+  ParameterDialog parameter_dialog("Registration Parameters", MainWindow::getInstance());
+  parameter_dialog.addParameter(current_object_);
+  parameter_dialog.addParameter(segment_threshold_);
+  parameter_dialog.addParameter(registration_max_iterations_);
+  parameter_dialog.addParameter(registration_max_distance_);
+
+  if (!parameter_dialog.exec() == QDialog::Accepted)
+    return false;
+
+  segment_threshold = *segment_threshold_;
+  object = *current_object_;
+  max_iterations = *registration_max_iterations_;
+  max_distance = *registration_max_distance_;
+
+  return true;
+}

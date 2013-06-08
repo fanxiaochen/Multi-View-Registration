@@ -40,6 +40,7 @@ public:
   void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
   void registration(int object, int segment_threshold);
 
+  void automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance);
   bool isAxisAccurate();
 
   public slots:
