@@ -745,21 +745,27 @@ bool Registrator::isAxisAccurate()
   return flag;
 }
 
-void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance)
+void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
+  double transformation_epsilon, double euclidean_fitness_epsilon)
 {
-  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
-  size_t k = 0;
-  while (k < 12)
+  size_t view_number = 1;
+  while (view_number < 12)
   {
-
+    automaticRegistrationICP(max_iterations, max_distance, object, view_number);
+    refineAxis(object);
+    //check whether axis is accurate
   }
+  registration(object, segment_threshold);
 }
 
 void Registrator::automaticRegistration(void)
 {
   int object, segment_threshold, max_iterations;
   double max_distance;
-  if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, max_distance))
+  double transformation_epsilon;
+  double euclidean_fitness_epsilon;
+  if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, max_distance, 
+    transformation_epsilon, euclidean_fitness_epsilon))
     return;
 
   QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
@@ -771,10 +777,68 @@ void Registrator::automaticRegistration(void)
   connect(watcher, SIGNAL(started()), messenger, SLOT(sendRunningMessage()));
   connect(watcher, SIGNAL(finished()), messenger, SLOT(sendFinishedMessage()));
 
-  watcher->setFuture(QtConcurrent::run(this, &Registrator::automaticRegistration, object, segment_threshold, max_iterations, max_distance));
+  watcher->setFuture(QtConcurrent::run(this, &Registrator::automaticRegistration, object, segment_threshold, max_iterations, max_distance, 
+  transformation_epsilon, euclidean_fitness_epsilon));
+ 
 }
 
+void Registrator::automaticRegistrationICP(int max_iterations, double max_distance, int object, int view_number)
+{
+  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+  std::vector<osg::ref_ptr<PointCloud> > point_clouds;
 
+  for(size_t i = 1, i_end = view_number; i < i_end; i ++)
+  {
+    osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, i);
+    point_clouds.push_back(point_cloud);
+  }
+
+  if (point_clouds.empty())
+    return;
+
+  for (size_t i = 0, i_end = point_clouds.size(); i < i_end; ++ i)
+    point_clouds[i]->initRotation();
+
+  PCLPointCloud::Ptr source(new PCLPointCloud);
+  PCLPointCloud::Ptr target(new PCLPointCloud);
+
+  pcl::IterativeClosestPoint<PCLPoint, PCLPoint> icp;
+  icp.setUseReciprocalCorrespondences(true);
+  // Set the max correspondence distance (e.g., correspondences with higher distances will be ignored)
+  icp.setMaxCorrespondenceDistance(max_distance);
+  // Set the maximum number of iterations (criterion 1)
+  icp.setMaximumIterations(max_iterations);
+  // Set the transformation epsilon (criterion 2)
+  icp.setTransformationEpsilon(0.000001);
+  // Set the euclidean distance difference epsilon (criterion 3)
+  icp.setEuclideanFitnessEpsilon(64);
+
+  model->getPointCloud(object, 0)->getTransformedPoints(*target);
+  for (size_t i = 0, i_end = point_clouds.size(); i < i_end; ++ i)
+  {
+    point_clouds[i]->getTransformedPoints(*source);
+
+    icp.setInputSource(source);
+    icp.setInputTarget(target);
+    PCLPointCloud transformed_source;
+    icp.align(transformed_source);
+
+    osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
+    point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
+
+    *target += transformed_source;
+  }
+
+  if (show_error_)
+  {
+    QMutexLocker locker(&mutex_);
+    computeError(object);
+  }
+
+  expire();
+
+  return;
+}
 
 void Registrator::toggleRendering()
 {

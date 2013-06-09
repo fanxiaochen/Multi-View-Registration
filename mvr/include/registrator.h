@@ -40,7 +40,8 @@ public:
   void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
   void registration(int object, int segment_threshold);
 
-  void automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance);
+  void automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
+    double transformation_epsilon, double euclidean_fitness_epsilon);
   bool isAxisAccurate();
 
   public slots:
@@ -60,6 +61,7 @@ protected:
   void visualizeAxis(void);
   void save(const QString& filename);
   void load(const QString& filename);
+  void automaticRegistrationICP(int max_iterations, double max_distance, int object, int view_number);
 
 protected:
   osg::ref_ptr<osg::MatrixTransform>                  pivot_point_;

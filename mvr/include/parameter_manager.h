@@ -32,7 +32,8 @@ public:
   bool getRegistrationLUMParameters(int& segment_threshold, int& max_iterations, double& max_distance, int& object);
   bool getRegistrationICPParameters(int& max_iterations, double& max_distance, int& object, int& repeat_times);
   bool getRegistrationParameters(int& object, int& segment_threshold);
-  bool getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, double& max_distance);
+  bool getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, double& max_distance, 
+    double& transformation_epsilon, double& euclidean_fitness_epsilon);
 
 protected:
   void addObjectParameters(ParameterDialog* parameter_dialog, bool with_objects);
@@ -54,6 +55,9 @@ private:
 
   DoubleParameter*                                    triangle_length_;
   IntParameter*                                       segment_threshold_;
+
+  DoubleParameter*                                    transformation_epsilon_;
+  DoubleParameter*                                    euclidean_fitness_epsilon_;
 
 };
 
