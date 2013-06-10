@@ -15,6 +15,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/bind.hpp>
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/registration/icp.h>
@@ -777,8 +778,11 @@ void Registrator::automaticRegistration(void)
   connect(watcher, SIGNAL(started()), messenger, SLOT(sendRunningMessage()));
   connect(watcher, SIGNAL(finished()), messenger, SLOT(sendFinishedMessage()));
 
-  watcher->setFuture(QtConcurrent::run(this, &Registrator::automaticRegistration, object, segment_threshold, max_iterations, max_distance, 
-  transformation_epsilon, euclidean_fitness_epsilon));
+  //http://www.boost.org/doc/libs/1_53_0/libs/bind/bind.html#Limitations 
+  //binding an overloaded function
+  watcher->setFuture(QtConcurrent::run(
+    boost::bind(static_cast<void (Registrator::*)(int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, max_distance, 
+    transformation_epsilon, euclidean_fitness_epsilon)));
  
 }
 
