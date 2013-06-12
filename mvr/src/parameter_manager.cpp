@@ -10,7 +10,7 @@
 #include "parameter_manager.h"
 
 ParameterManager::ParameterManager(void)
-  :registration_max_iterations_(new IntParameter("Max Iterations", "Max Iterations", 64, 1, 1024)),
+  :registration_max_iterations_(new IntParameter("Max Iterations", "Max Iterations", 64, 1, std::numeric_limits<int>::max(),1)),
   registration_max_distance_(new DoubleParameter("Max Distance", "Max Distance", 4, 1, 16, 1.0)),
   start_object_(new IntParameter("Start object", "Start object", -1, -1, -1, 1)),
   end_object_(new IntParameter("End object", "End object", -1, -1, -1, 1)),
@@ -19,7 +19,7 @@ ParameterManager::ParameterManager(void)
   triangle_length_(new DoubleParameter("Triangle Length", "Triangle Length", 2.5, 1.0, 8.0, 0.1)),
   segment_threshold_(new IntParameter("Segment Threshold", "Segment Threshold", 10, 10, 500, 10)),
   transformation_epsilon_(new DoubleParameter("Transformation Epsilon", "Transformation Epsilon", 100, 1e-8, 100, 1)),
-  euclidean_fitness_epsilon_(new DoubleParameter("Euclidean Fitness Epsilon", "Euclidean Fitness Epsilon", 100, 1, 100, 1))
+  euclidean_fitness_epsilon_(new DoubleParameter("Euclidean Fitness Epsilon", "Euclidean Fitness Epsilon", 50, 1, 100, 1))
 {
 }
 

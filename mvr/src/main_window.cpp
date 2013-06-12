@@ -122,7 +122,7 @@ void MainWindow::init(void)
   connect(ui_.actionICP, SIGNAL(triggered()), registrator_, SLOT(registrationICP()));
   connect(ui_.actionRefineAxis, SIGNAL(triggered()), registrator_, SLOT(refineAxis()));
   connect(ui_.actionGenerateObject, SIGNAL(triggered()), registrator_, SLOT(registration()));
-  connect(ui_.actionAutoReg, SIGNAL(triggered()), registrator_, SLOT(automaticRegistration));
+  connect(ui_.actionAutoReg, SIGNAL(triggered()), registrator_, SLOT(automaticRegistration()));
 
   loadSettings();
 

@@ -720,7 +720,7 @@ void Registrator::registration(int object, int segment_threshold)
   for (size_t view = 0; view < 12; ++ view)
   {
     osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, view);
-    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
+//    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
     point_cloud->initRotation();
     point_cloud->setRegisterState(true);
   }
@@ -750,10 +750,12 @@ void Registrator::automaticRegistration(int object, int segment_threshold, int m
   double transformation_epsilon, double euclidean_fitness_epsilon)
 {
   size_t view_number = 1;
-  while (view_number < 12)
+  while (view_number < 5)
   {
-    automaticRegistrationICP(max_iterations, max_distance, object, view_number);
-    refineAxis(object);
+    automaticRegistrationICP(view_number,object,max_iterations,max_distance, 
+      transformation_epsilon,euclidean_fitness_epsilon);
+    
+    view_number ++;
     //check whether axis is accurate
   }
   registration(object, segment_threshold);
@@ -786,12 +788,13 @@ void Registrator::automaticRegistration(void)
  
 }
 
-void Registrator::automaticRegistrationICP(int max_iterations, double max_distance, int object, int view_number)
+void Registrator::automaticRegistrationICP(int view_number, int object, int max_iterations, double max_distance, 
+  double transformation_epsilon, double euclidean_fitness_epsilon)
 {
   FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
   std::vector<osg::ref_ptr<PointCloud> > point_clouds;
 
-  for(size_t i = 1, i_end = view_number; i < i_end; i ++)
+  for(size_t i = 1, i_end = view_number; i <= i_end; i ++)
   {
     osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, i);
     point_clouds.push_back(point_cloud);
@@ -801,36 +804,67 @@ void Registrator::automaticRegistrationICP(int max_iterations, double max_distan
     return;
 
   for (size_t i = 0, i_end = point_clouds.size(); i < i_end; ++ i)
+  {
     point_clouds[i]->initRotation();
+    point_clouds[i]->setRegisterState(true);
+  }
 
   PCLPointCloud::Ptr source(new PCLPointCloud);
   PCLPointCloud::Ptr target(new PCLPointCloud);
 
-  pcl::IterativeClosestPoint<PCLPoint, PCLPoint> icp;
   icp.setUseReciprocalCorrespondences(true);
   // Set the max correspondence distance (e.g., correspondences with higher distances will be ignored)
   icp.setMaxCorrespondenceDistance(max_distance);
   // Set the maximum number of iterations (criterion 1)
   icp.setMaximumIterations(max_iterations);
   // Set the transformation epsilon (criterion 2)
-  icp.setTransformationEpsilon(0.000001);
+//  icp.setTransformationEpsilon(transformation_epsilon);
   // Set the euclidean distance difference epsilon (criterion 3)
-  icp.setEuclideanFitnessEpsilon(64);
+  icp.setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
 
+  euclidean_fitness_epsilons_.push_back(euclidean_fitness_epsilon);
+  std::cout<<"View "<<view_number<<std::endl;
   model->getPointCloud(object, 0)->getTransformedPoints(*target);
   for (size_t i = 0, i_end = point_clouds.size(); i < i_end; ++ i)
   {
     point_clouds[i]->getTransformedPoints(*source);
-
     icp.setInputSource(source);
     icp.setInputTarget(target);
-    PCLPointCloud transformed_source;
-    icp.align(transformed_source);
+//    PCLPointCloud transformed_source;
+    
+    std::cout<<"i:"<<i<<std::endl;
+    if(i == view_number - 1)
+    {
+      double difference = 1;
+      double score, prev_score;
+      prev_score = euclidean_fitness_epsilons_[i];
+      do 
+      {
+        setCriteria(i);
+        icp.align(*source);
+        osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
+        point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
 
-    osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
-    point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
+        score = icp.getFitnessScore();
+        difference = (prev_score - score)/prev_score;
 
-    *target += transformed_source;
+        std::cout<<"prev_score:"<<prev_score<<std::endl;
+        std::cout<<"score:"<<score<<std::endl;
+        std::cout<<"difference:"<<difference<<std::endl;
+        prev_score = score;
+        euclidean_fitness_epsilons_[i] = score;
+        
+      } while (difference > 0);      
+    }
+    else
+    {
+      setCriteria(i);
+      icp.align(*source);
+      osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
+      point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
+    } 
+
+    *target += *source;
   }
 
   if (show_error_)
@@ -839,9 +873,16 @@ void Registrator::automaticRegistrationICP(int max_iterations, double max_distan
     computeError(object);
   }
 
+  refineAxis(object);
   expire();
 
   return;
+}
+
+void Registrator::setCriteria(int source_number)
+{
+  icp.setEuclideanFitnessEpsilon(euclidean_fitness_epsilons_[source_number]);
+  return; 
 }
 
 void Registrator::toggleRendering()

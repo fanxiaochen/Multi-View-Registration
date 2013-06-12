@@ -490,7 +490,7 @@ void PointCloud::initPointGraph(double distance_threshold)
 
     size_t source_id = source_handle->info();
     size_t target_id = target_handle->info();
-    assert (source_id < plant_points_num_ && target_id < plant_points_num_);
+    assert (source_id < points_num_ && target_id < points_num_);
     WeightedEdge weighted_edge(distance_L1);
     boost::add_edge(source_id, target_id, weighted_edge, g_point);
   }

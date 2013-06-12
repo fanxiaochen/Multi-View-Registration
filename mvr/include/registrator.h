@@ -3,6 +3,9 @@
 #define REGISTRATOR_H
 
 #include <QObject>
+#include <pcl/registration/icp.h>
+
+#include "types.h"
 #include "renderable.h"
 
 namespace osgManipulator
@@ -61,7 +64,10 @@ protected:
   void visualizeAxis(void);
   void save(const QString& filename);
   void load(const QString& filename);
-  void automaticRegistrationICP(int max_iterations, double max_distance, int object, int view_number);
+  void setCriteria(int source_number);
+  void automaticRegistrationICP(int view_number, int object, int max_iterations, double max_distance, 
+    double transformation_epsilon, double euclidean_fitness_epsilon);
+
 
 protected:
   osg::ref_ptr<osg::MatrixTransform>                  pivot_point_;
@@ -73,6 +79,10 @@ protected:
 protected:
   osg::ref_ptr<osg::Vec3Array>  error_vertices_;
   osg::ref_ptr<osg::Vec4Array>  error_colors_;
+//  std::vector<double>           transformation_epsilons_;
+  std::vector<double>           euclidean_fitness_epsilons_; 
+
+  pcl::IterativeClosestPoint<PCLPoint, PCLPoint>   icp;
 
 private:
   bool              initilized_;
