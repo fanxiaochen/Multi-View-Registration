@@ -10,7 +10,7 @@
 #include "parameter_manager.h"
 
 ParameterManager::ParameterManager(void)
-  :registration_max_iterations_(new IntParameter("Max Iterations", "Max Iterations", 64, 1, std::numeric_limits<int>::max(),1)),
+  :registration_max_iterations_(new IntParameter("Max Iterations", "Max Iterations", std::numeric_limits<int>::max(), 1, std::numeric_limits<int>::max(),1)),
   registration_max_distance_(new DoubleParameter("Max Distance", "Max Distance", 4, 1, 16, 1.0)),
   start_object_(new IntParameter("Start object", "Start object", -1, -1, -1, 1)),
   end_object_(new IntParameter("End object", "End object", -1, -1, -1, 1)),

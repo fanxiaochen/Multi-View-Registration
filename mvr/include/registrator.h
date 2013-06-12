@@ -45,7 +45,6 @@ public:
 
   void automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
     double transformation_epsilon, double euclidean_fitness_epsilon);
-  bool isAxisAccurate();
 
   public slots:
     void load(void);
@@ -65,6 +64,7 @@ protected:
   void save(const QString& filename);
   void load(const QString& filename);
   void setCriteria(int source_number);
+  void addEuclideanFitnessEpsilon(double euclidean_fitness_epsilon);
   void automaticRegistrationICP(int view_number, int object, int max_iterations, double max_distance, 
     double transformation_epsilon, double euclidean_fitness_epsilon);
 

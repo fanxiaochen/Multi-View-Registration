@@ -720,7 +720,7 @@ void Registrator::registration(int object, int segment_threshold)
   for (size_t view = 0; view < 12; ++ view)
   {
     osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, view);
-//    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
+    point_cloud->denoise(segment_threshold, ParameterManager::getInstance().getTriangleLength());
     point_cloud->initRotation();
     point_cloud->setRegisterState(true);
   }
@@ -739,26 +739,19 @@ void Registrator::registration(int object, int segment_threshold)
   return;
 }
 
-bool Registrator::isAxisAccurate()
-{
-  bool flag = false;
-
-  return flag;
-}
-
 void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
   double transformation_epsilon, double euclidean_fitness_epsilon)
 {
   size_t view_number = 1;
-  while (view_number < 5)
+  while (view_number < 12)
   {
     automaticRegistrationICP(view_number,object,max_iterations,max_distance, 
       transformation_epsilon,euclidean_fitness_epsilon);
     
     view_number ++;
-    //check whether axis is accurate
   }
   registration(object, segment_threshold);
+  return;
 }
 
 void Registrator::automaticRegistration(void)
@@ -822,55 +815,44 @@ void Registrator::automaticRegistrationICP(int view_number, int object, int max_
   // Set the euclidean distance difference epsilon (criterion 3)
   icp.setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
 
-  euclidean_fitness_epsilons_.push_back(euclidean_fitness_epsilon);
-  std::cout<<"View "<<view_number<<std::endl;
+  std::cout<<"View:"<<view_number<<std::endl;
+  addEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
   model->getPointCloud(object, 0)->getTransformedPoints(*target);
   for (size_t i = 0, i_end = point_clouds.size(); i < i_end; ++ i)
   {
     point_clouds[i]->getTransformedPoints(*source);
     icp.setInputSource(source);
     icp.setInputTarget(target);
-//    PCLPointCloud transformed_source;
     
     std::cout<<"i:"<<i<<std::endl;
-    if(i == view_number - 1)
-    {
-      double difference = 1;
-      double score, prev_score;
-      prev_score = euclidean_fitness_epsilons_[i];
-      do 
-      {
-        setCriteria(i);
-        icp.align(*source);
-        osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
-        point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
 
-        score = icp.getFitnessScore();
-        difference = (prev_score - score)/prev_score;
+    double difference = 1;
 
-        std::cout<<"prev_score:"<<prev_score<<std::endl;
-        std::cout<<"score:"<<score<<std::endl;
-        std::cout<<"difference:"<<difference<<std::endl;
-        prev_score = score;
-        euclidean_fitness_epsilons_[i] = score;
-        
-      } while (difference > 0);      
-    }
-    else
+    do 
     {
       setCriteria(i);
       icp.align(*source);
       osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
       point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
-    } 
+
+      if(i != view_number-1)
+        break;
+
+      double score, prev_score;
+      prev_score = euclidean_fitness_epsilons_[i];
+      score = icp.getFitnessScore();
+      difference = (prev_score - score)/prev_score;
+
+      std::cout<<"prev_score:"<<prev_score<<std::endl;
+      std::cout<<"score:"<<score<<std::endl;
+      std::cout<<"difference:"<<difference<<std::endl<<std::endl;
+
+      prev_score = score;
+      euclidean_fitness_epsilons_[i] = score;
+
+    } while (difference > 0);
 
     *target += *source;
-  }
-
-  if (show_error_)
-  {
-    QMutexLocker locker(&mutex_);
-    computeError(object);
   }
 
   refineAxis(object);
@@ -883,6 +865,12 @@ void Registrator::setCriteria(int source_number)
 {
   icp.setEuclideanFitnessEpsilon(euclidean_fitness_epsilons_[source_number]);
   return; 
+}
+
+void Registrator::addEuclideanFitnessEpsilon(double euclidean_fitness_epsilon)
+{
+  euclidean_fitness_epsilons_.push_back(euclidean_fitness_epsilon);
+  return;
 }
 
 void Registrator::toggleRendering()
