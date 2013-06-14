@@ -565,7 +565,8 @@ void Registrator::registrationICP(int max_iterations, double max_distance, int o
     icp.setInputTarget(target);
     PCLPointCloud transformed_source;
     icp.align(transformed_source);
-
+    if(i == i_end-1)
+      std::cout<<"i:"<<i<<" "<<icp.getFitnessScore()<<std::endl;
     osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
     point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
 
@@ -826,7 +827,9 @@ void Registrator::automaticRegistrationICP(int view_number, int object, int max_
     
     std::cout<<"i:"<<i<<std::endl;
 
+    std::vector<double> fitness_scores;
     double difference = 1;
+    double score, prev_score = euclidean_fitness_epsilon;
 
     do 
     {
@@ -838,17 +841,48 @@ void Registrator::automaticRegistrationICP(int view_number, int object, int max_
       if(i != view_number-1)
         break;
 
-      double score, prev_score;
-      prev_score = euclidean_fitness_epsilons_[i];
-      score = icp.getFitnessScore();
-      difference = (prev_score - score)/prev_score;
+      double fitness_epsilon = icp.getFitnessScore();
+      score = fitness_epsilon;
+
+      /*if(fitness_scores.empty())
+      {
+        fitness_scores.push_back(score);
+        euclidean_fitness_epsilons_[i] = fitness_epsilon;
+        std::cout<<score<<std::endl;
+        continue;
+      }*/
+      std::vector<double>::iterator iter;
+      for(iter = fitness_scores.begin(); iter != fitness_scores.end(); iter ++)
+      {
+        if(fabs(*iter - score) <= 0.0001)
+          break;
+      }
+//      std::vector<double>::iterator iter = find(fitness_scores.begin(),fitness_scores.end(),score);
+      if(iter == fitness_scores.end())
+      {
+        fitness_scores.push_back(score);
+        euclidean_fitness_epsilons_[i] = fitness_epsilon;
+        std::cout<<"score:"<<score<<std::endl;
+        continue;
+      }
+
+      int num = 1;
+      while (iter != fitness_scores.end())
+      {
+        score += *iter;
+        iter ++;
+        num ++;
+      }
+      score = score/num;
+      difference = (prev_score - score);
 
       std::cout<<"prev_score:"<<prev_score<<std::endl;
       std::cout<<"score:"<<score<<std::endl;
       std::cout<<"difference:"<<difference<<std::endl<<std::endl;
 
       prev_score = score;
-      euclidean_fitness_epsilons_[i] = score;
+      euclidean_fitness_epsilons_[i] = fitness_epsilon;
+      fitness_scores.clear();
 
     } while (difference > 0);
 
