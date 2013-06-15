@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "renderable.h"
+#include "point_cloud.h"
 
 namespace osgManipulator
 {
@@ -63,10 +64,7 @@ protected:
   void visualizeAxis(void);
   void save(const QString& filename);
   void load(const QString& filename);
-  void setCriteria(int source_number);
-  void addEuclideanFitnessEpsilon(double euclidean_fitness_epsilon);
-  void automaticRegistrationICP(int view_number, int object, int max_iterations, double max_distance, 
-    double transformation_epsilon, double euclidean_fitness_epsilon);
+  void automaticRefineTransformation(int max_iterations, size_t source_index);
 
 
 protected:
@@ -79,10 +77,12 @@ protected:
 protected:
   osg::ref_ptr<osg::Vec3Array>  error_vertices_;
   osg::ref_ptr<osg::Vec4Array>  error_colors_;
-//  std::vector<double>           transformation_epsilons_;
-  std::vector<double>           euclidean_fitness_epsilons_; 
 
-  pcl::IterativeClosestPoint<PCLPoint, PCLPoint>   icp;
+  pcl::IterativeClosestPoint<PCLPoint, PCLPoint>   icp_;
+  std::vector<osg::ref_ptr<PointCloud> > point_clouds_;
+  PCLPointCloud::Ptr source_;
+  PCLPointCloud::Ptr target_;
+  
 
 private:
   bool              initilized_;
