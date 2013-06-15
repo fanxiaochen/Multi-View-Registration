@@ -862,10 +862,11 @@ void Registrator::automaticRegistrationICP(int view_number, int object, int max_
       {
         fitness_scores.push_back(score);
         euclidean_fitness_epsilons_[i] = fitness_epsilon;
-        std::cout<<"score:"<<score<<std::endl;
+        std::cout<<"fitness_epsilon:"<<score<<std::endl;
         continue;
       }
 
+      std::cout<<"fitness_epsilon:"<<fitness_epsilon<<std::endl;
       int num = 1;
       while (iter != fitness_scores.end())
       {
@@ -875,7 +876,7 @@ void Registrator::automaticRegistrationICP(int view_number, int object, int max_
       }
       score = score/num;
       difference = (prev_score - score);
-
+      
       std::cout<<"prev_score:"<<prev_score<<std::endl;
       std::cout<<"score:"<<score<<std::endl;
       std::cout<<"difference:"<<difference<<std::endl<<std::endl;
