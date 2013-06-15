@@ -742,7 +742,7 @@ void Registrator::registration(int object, int segment_threshold)
   return;
 }
 
-void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
+void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, int repeat_times, double max_distance, 
   double transformation_epsilon, double euclidean_fitness_epsilon)
 {
 
@@ -772,7 +772,7 @@ void Registrator::automaticRegistration(int object, int segment_threshold, int m
     icp_.setInputSource(source_);
     icp_.setInputTarget(target_);
 
-    automaticRefineTransformation(max_iterations, source_index);
+    automaticRefineTransformation(repeat_times, source_index);
     /*std::vector<double> fitness_scores;
     double difference = 1;
     double score, prev_score = euclidean_fitness_epsilon;
@@ -839,12 +839,12 @@ void Registrator::automaticRegistration(int object, int segment_threshold, int m
 
 void Registrator::automaticRegistration(void)
 {
-  int object, segment_threshold, max_iterations;
+  int object, segment_threshold, max_iterations, repeat_times;
   double max_distance;
   double transformation_epsilon;
   double euclidean_fitness_epsilon;
   if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, max_distance, 
-    transformation_epsilon, euclidean_fitness_epsilon))
+    repeat_times, transformation_epsilon, euclidean_fitness_epsilon))
     return;
 
   QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
@@ -859,14 +859,14 @@ void Registrator::automaticRegistration(void)
   //http://www.boost.org/doc/libs/1_53_0/libs/bind/bind.html#Limitations 
   //binding an overloaded function
   watcher->setFuture(QtConcurrent::run(
-    boost::bind(static_cast<void (Registrator::*)(int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, max_distance, 
-    transformation_epsilon, euclidean_fitness_epsilon)));
+    boost::bind(static_cast<void (Registrator::*)(int,int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, max_distance, 
+    repeat_times, transformation_epsilon, euclidean_fitness_epsilon)));
  
 }
 
-void Registrator::automaticRefineTransformation(int max_iterations, size_t source_index)
+void Registrator::automaticRefineTransformation(int repeat_times, size_t source_index)
 {
-  for(size_t i = 0, i_end = max_iterations; i < i_end; i++)
+  for(size_t i = 0, i_end = repeat_times; i < i_end; i++)
   {
     icp_.align(*source_);
     osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp_.getFinalTransformation());

@@ -44,8 +44,8 @@ public:
   void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
   void registration(int object, int segment_threshold);
 
-  void automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
-    double transformation_epsilon, double euclidean_fitness_epsilon);
+  void automaticRegistration(int object, int segment_threshold, int max_iterations, 
+    int repeat_times, double max_distance,  double transformation_epsilon, double euclidean_fitness_epsilon);
 
   public slots:
     void load(void);
