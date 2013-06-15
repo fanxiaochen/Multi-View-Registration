@@ -843,8 +843,8 @@ void Registrator::automaticRegistration(void)
   double max_distance;
   double transformation_epsilon;
   double euclidean_fitness_epsilon;
-  if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, max_distance, 
-    repeat_times, transformation_epsilon, euclidean_fitness_epsilon))
+  if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, repeat_times,
+    max_distance, transformation_epsilon, euclidean_fitness_epsilon))
     return;
 
   QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
@@ -859,8 +859,8 @@ void Registrator::automaticRegistration(void)
   //http://www.boost.org/doc/libs/1_53_0/libs/bind/bind.html#Limitations 
   //binding an overloaded function
   watcher->setFuture(QtConcurrent::run(
-    boost::bind(static_cast<void (Registrator::*)(int,int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, max_distance, 
-    repeat_times, transformation_epsilon, euclidean_fitness_epsilon)));
+    boost::bind(static_cast<void (Registrator::*)(int,int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, repeat_times,
+    max_distance, transformation_epsilon, euclidean_fitness_epsilon)));
  
 }
 
