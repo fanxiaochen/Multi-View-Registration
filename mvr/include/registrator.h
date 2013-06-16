@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "renderable.h"
+#include "point_cloud.h"
 
 namespace osgManipulator
 {
@@ -43,7 +44,7 @@ public:
   void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
   void registration(int object, int segment_threshold);
 
-  void automaticRegistration(int object, int segment_threshold, int max_iterations, double max_distance, 
+  void automaticRegistration(int object, int segment_threshold, int max_iterations, int repeat_times, double max_distance, 
     double transformation_epsilon, double euclidean_fitness_epsilon);
 
   public slots:
@@ -65,9 +66,9 @@ protected:
   void load(const QString& filename);
   void setCriteria(int source_number);
   void addEuclideanFitnessEpsilon(double euclidean_fitness_epsilon);
-  void automaticRegistrationICP(int view_number, int object, int max_iterations, double max_distance, 
+  void automaticRegistrationICP(int view_number, int object, int max_iterations, int repeat_times, double max_distance, 
     double transformation_epsilon, double euclidean_fitness_epsilon);
-
+  void refineTransformation(int repeat_times, int source_index);
 
 protected:
   osg::ref_ptr<osg::MatrixTransform>                  pivot_point_;
@@ -82,7 +83,10 @@ protected:
 //  std::vector<double>           transformation_epsilons_;
   std::vector<double>           euclidean_fitness_epsilons_; 
 
-  pcl::IterativeClosestPoint<PCLPoint, PCLPoint>   icp;
+  pcl::IterativeClosestPoint<PCLPoint, PCLPoint>   icp_;
+  std::vector<osg::ref_ptr<PointCloud> > point_clouds_;
+  PCLPointCloud::Ptr source_;
+  PCLPointCloud::Ptr target_;
 
 private:
   bool              initilized_;
