@@ -15,7 +15,7 @@ ParameterManager::ParameterManager(void)
   start_object_(new IntParameter("Start object", "Start object", -1, -1, -1, 1)),
   end_object_(new IntParameter("End object", "End object", -1, -1, -1, 1)),
   current_object_(new IntParameter("Current object", "Current object", -1, -1, -1, 1)),
-  repeat_times_(new IntParameter("Repeat times", "Repeat times", 5, 1, 100, 1)),
+  repeat_times_(new IntParameter("Repeat times", "Repeat times", 5, 1, 1000, 1)),
   triangle_length_(new DoubleParameter("Triangle Length", "Triangle Length", 2.5, 1.0, 8.0, 0.1)),
   segment_threshold_(new IntParameter("Segment Threshold", "Segment Threshold", 10, 10, 500, 10)),
   transformation_epsilon_(new DoubleParameter("Transformation Epsilon", "Transformation Epsilon", 100, 1e-8, 100, 1)),
@@ -182,8 +182,13 @@ bool ParameterManager::getRegistrationParameters(int& object, int& segment_thres
 }
 
 
+<<<<<<< HEAD
 bool ParameterManager::getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, int& repeat_times, double& max_distance,
   double& transformation_epsilon, double& euclidean_fitness_epsilon)
+=======
+bool ParameterManager::getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, int& repeat_times, 
+  double& max_distance, double& transformation_epsilon, double& euclidean_fitness_epsilon)
+>>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
 {
   ParameterDialog parameter_dialog("Registration Parameters", MainWindow::getInstance());
   parameter_dialog.addParameter(current_object_);

@@ -746,14 +746,99 @@ void Registrator::registration(int object, int segment_threshold)
 void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, int repeat_times, double max_distance, 
   double transformation_epsilon, double euclidean_fitness_epsilon)
 {
+
+  FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
+  model->getPointCloud(object, 0)->getTransformedPoints(*target_);
   size_t view_number = 1;
   while (view_number < 12)
   {
+<<<<<<< HEAD
     automaticRegistrationICP(view_number,object,max_iterations,repeat_times,max_distance, 
       transformation_epsilon,euclidean_fitness_epsilon);
+=======
+    size_t source_index = view_number - 1;
+    osg::ref_ptr<PointCloud> point_cloud = model->getPointCloud(object, view_number);
+    point_clouds_.push_back(point_cloud);
+
+    if (point_clouds_.empty())
+      return;
+
+    point_clouds_[source_index]->initRotation();
+    point_clouds_[source_index]->setRegisterState(true);
+
+    icp_.setUseReciprocalCorrespondences(true);
+    icp_.setMaxCorrespondenceDistance(max_distance);
+    icp_.setMaximumIterations(max_iterations);
+    icp_.setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
+
+    std::cout<<"View:"<<view_number<<std::endl;
+>>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
     
+    point_clouds_[source_index]->getTransformedPoints(*source_);
+    icp_.setInputSource(source_);
+    icp_.setInputTarget(target_);
+
+    automaticRefineTransformation(repeat_times, source_index);
+    /*std::vector<double> fitness_scores;
+    double difference = 1;
+    double score, prev_score = euclidean_fitness_epsilon;
+
+    do 
+    {
+    setCriteria(i);
+    icp.align(*source);
+    osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp.getFinalTransformation());
+    point_clouds[i]->setMatrix(point_clouds[i]->getMatrix()*result_matrix);
+
+    if(i != view_number-1)
+    break;
+
+    double fitness_epsilon = icp.getFitnessScore();
+    score = fitness_epsilon;
+
+    std::vector<double>::iterator iter;
+    for(iter = fitness_scores.begin(); iter != fitness_scores.end(); iter ++)
+    {
+    if(fabs(*iter - score) <= 0.0001)
+    break;
+    }
+
+    if(iter == fitness_scores.end())
+    {
+    fitness_scores.push_back(score);
+    euclidean_fitness_epsilons_[i] = fitness_epsilon;
+    std::cout<<"fitness_epsilon:"<<score<<std::endl;
+    continue;
+    }
+
+    std::cout<<"fitness_epsilon:"<<fitness_epsilon<<std::endl;
+    int num = 1;
+    while (iter != fitness_scores.end())
+    {
+    score += *iter;
+    iter ++;
+    num ++;
+    }
+    score = score/num;
+    difference = (prev_score - score);
+
+    std::cout<<"prev_score:"<<prev_score<<std::endl;
+    std::cout<<"score:"<<score<<std::endl;
+    std::cout<<"difference:"<<difference<<std::endl<<std::endl;
+
+    prev_score = score;
+    euclidean_fitness_epsilons_[i] = fitness_epsilon;
+    fitness_scores.clear();
+
+    } while (difference > 0);*/
+
+    *target_ += *source_;
     view_number ++;
+
+    refineAxis(object);
+    expire();
   }
+
   registration(object, segment_threshold);
   return;
 }
@@ -764,8 +849,13 @@ void Registrator::automaticRegistration(void)
   double max_distance;
   double transformation_epsilon;
   double euclidean_fitness_epsilon;
+<<<<<<< HEAD
   if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, repeat_times, max_distance, 
     transformation_epsilon, euclidean_fitness_epsilon))
+=======
+  if (!ParameterManager::getInstance().getAutomaticRegistrationParameters(object, segment_threshold, max_iterations, repeat_times,
+    max_distance, transformation_epsilon, euclidean_fitness_epsilon))
+>>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
     return;
 
   QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
@@ -780,6 +870,7 @@ void Registrator::automaticRegistration(void)
   //http://www.boost.org/doc/libs/1_53_0/libs/bind/bind.html#Limitations 
   //binding an overloaded function
   watcher->setFuture(QtConcurrent::run(
+<<<<<<< HEAD
     boost::bind(static_cast<void (Registrator::*)(int,int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, repeat_times, max_distance, 
     transformation_epsilon, euclidean_fitness_epsilon)));
  
@@ -910,6 +1001,23 @@ void Registrator::addEuclideanFitnessEpsilon(double euclidean_fitness_epsilon)
 {
   euclidean_fitness_epsilons_.push_back(euclidean_fitness_epsilon);
   return;
+=======
+    boost::bind(static_cast<void (Registrator::*)(int,int,int,int,double,double,double)>(&Registrator::automaticRegistration), this, object, segment_threshold, max_iterations, repeat_times,
+    max_distance, transformation_epsilon, euclidean_fitness_epsilon)));
+ 
+}
+
+void Registrator::automaticRefineTransformation(int repeat_times, size_t source_index)
+{
+  for(size_t i = 0, i_end = repeat_times; i < i_end; i++)
+  {
+    icp_.align(*source_);
+    osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp_.getFinalTransformation());
+    point_clouds_[source_index]->setMatrix(point_clouds_[source_index]->getMatrix()*result_matrix);
+    std::cout<<icp_.getFitnessScore()<<std::endl;
+    //check whether the loop stops
+  }
+>>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
 }
 
 void Registrator::refineTransformation(int repeat_times, int source_index)
