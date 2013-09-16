@@ -745,7 +745,6 @@ void Registrator::registration(int object, int segment_threshold)
 void Registrator::automaticRegistration(int object, int segment_threshold, int max_iterations, int repeat_times, double max_distance, 
   double transformation_epsilon, double euclidean_fitness_epsilon)
 {
-
   FileSystemModel* model = MainWindow::getInstance()->getFileSystemModel();
   model->getPointCloud(object, 0)->getTransformedPoints(*target_);
   size_t view_number = 1;
@@ -766,13 +765,21 @@ void Registrator::automaticRegistration(int object, int segment_threshold, int m
     icp_.setMaximumIterations(max_iterations);
     icp_.setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
 
-    std::cout<<"View:"<<view_number<<std::endl;
-    
     point_clouds_[source_index]->getTransformedPoints(*source_);
     icp_.setInputSource(source_);
     icp_.setInputTarget(target_);
 
-    automaticRefineTransformation(repeat_times, source_index);
+    icp_.align(*source_);
+    osg::Matrix result_matrix = PclMatrixCaster<osg::Matrix>(icp_.getFinalTransformation());
+    point_clouds_[source_index]->setMatrix(point_clouds_[source_index]->getMatrix()*result_matrix);
+
+    *target_ += *source_;
+    view_number ++;
+
+    refineAxis(object);
+    expire();
+  }
+  
     /*std::vector<double> fitness_scores;
     double difference = 1;
     double score, prev_score = euclidean_fitness_epsilon;
@@ -826,12 +833,7 @@ void Registrator::automaticRegistration(int object, int segment_threshold, int m
 
     } while (difference > 0);*/
 
-    *target_ += *source_;
-    view_number ++;
-
-    refineAxis(object);
-    expire();
-  }
+    
 
   registration(object, segment_threshold);
   return;
