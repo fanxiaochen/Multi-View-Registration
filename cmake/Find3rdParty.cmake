@@ -10,3 +10,5 @@ set(LAPACK_LIBRARY optimized lapack.lib debug lapackd.lib)
 include_directories(${CLAPACK_INCLUDE_DIR})
 link_directories(${CLAPACK_LIBRARY_DIR})
 set(ThirdParty_LIBS ${ThirdParty_LIBS} ${BLAS_LIBRARY} ${LIBF2C_LIBRARY} ${LAPACK_LIBRARY})
+
+

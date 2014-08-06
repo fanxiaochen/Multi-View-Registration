@@ -9,6 +9,7 @@ find_package(OpenSceneGraph REQUIRED osgViewer osgText osgDB osgGA osgQt osgMani
 find_package(Qt4 REQUIRED QtCore QtGui QtOpenGL QtXml)
 find_package(PCL REQUIRED common io registration kdtree search)
 
+
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -110,7 +111,7 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 set(exe_name mvr)
 add_executable(${exe_name} ${srcs} ${incs})
 target_link_libraries(${exe_name} ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_CHRONO_LIBRARY} ${OPENSCENEGRAPH_LIBRARIES} ${QT_QTOPENGL_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${CGAL_LIBRARIES}
- ${GMP_LIBRARIES} ${PCL_COMMON_LIBRARY} ${PCL_IO_LIBRARY} ${PCL_REGISTRATION_LIBRARY} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${ThirdParty_LIBS})
+${GMP_LIBRARIES} ${PCL_COMMON_LIBRARY} ${PCL_IO_LIBRARY} ${PCL_REGISTRATION_LIBRARY} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${ThirdParty_LIBS})
 
 if(WIN32 AND MSVC)
   set_target_properties(${exe_name} PROPERTIES LINK_FLAGS_RELEASE /OPT:REF)

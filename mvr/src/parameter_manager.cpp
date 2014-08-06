@@ -182,13 +182,9 @@ bool ParameterManager::getRegistrationParameters(int& object, int& segment_thres
 }
 
 
-<<<<<<< HEAD
-bool ParameterManager::getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, int& repeat_times, double& max_distance,
-  double& transformation_epsilon, double& euclidean_fitness_epsilon)
-=======
 bool ParameterManager::getAutomaticRegistrationParameters(int& object, int& segment_threshold, int& max_iterations, int& repeat_times, 
   double& max_distance, double& transformation_epsilon, double& euclidean_fitness_epsilon)
->>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
+
 {
   ParameterDialog parameter_dialog("Registration Parameters", MainWindow::getInstance());
   parameter_dialog.addParameter(current_object_);

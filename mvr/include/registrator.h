@@ -44,13 +44,10 @@ public:
   void registrationICP(int max_iterations, double max_distance, int object, int repeat_times);
   void registration(int object, int segment_threshold);
 
-<<<<<<< HEAD
+
   void automaticRegistration(int object, int segment_threshold, int max_iterations, int repeat_times, double max_distance, 
     double transformation_epsilon, double euclidean_fitness_epsilon);
-=======
-  void automaticRegistration(int object, int segment_threshold, int max_iterations, 
-    int repeat_times, double max_distance,  double transformation_epsilon, double euclidean_fitness_epsilon);
->>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
+
 
   public slots:
     void load(void);
@@ -69,16 +66,16 @@ protected:
   void visualizeAxis(void);
   void save(const QString& filename);
   void load(const QString& filename);
-<<<<<<< HEAD
+
   void setCriteria(int source_number);
   void addEuclideanFitnessEpsilon(double euclidean_fitness_epsilon);
   void automaticRegistrationICP(int view_number, int object, int max_iterations, int repeat_times, double max_distance, 
     double transformation_epsilon, double euclidean_fitness_epsilon);
   void refineTransformation(int repeat_times, int source_index);
-=======
+
   void automaticRefineTransformation(int max_iterations, size_t source_index);
 
->>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
+
 
 protected:
   osg::ref_ptr<osg::MatrixTransform>                  pivot_point_;
@@ -95,10 +92,7 @@ protected:
   std::vector<osg::ref_ptr<PointCloud> > point_clouds_;
   PCLPointCloud::Ptr source_;
   PCLPointCloud::Ptr target_;
-<<<<<<< HEAD
-=======
-  
->>>>>>> 37b83026ef9413c4908571d01b42f5607391064f
+
 
 private:
   bool              initilized_;
